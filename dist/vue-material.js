@@ -1,5 +1,5 @@
 /*!
- * vue-material v1.0.0-beta-10.2
+ * vue-material v1.0.0-beta-11
  * Made with <3 by marcosmoura 2019
  * Released under the MIT License.
  */
@@ -3522,7 +3522,7 @@ exports.default = new _MdComponent2.default({
   watch: {
     mdActive: function mdActive(active) {
       var isBoolean = typeof active === 'boolean';
-      var isEvent = active.constructor.toString().match(/function (\w*)/)[1].toLowerCase() === 'mouseevent';
+      var isEvent = active instanceof MouseEvent;
 
       if (isBoolean && this.mdCentered && active) {
         this.startRipple({
@@ -9562,7 +9562,13 @@ exports.default = new _MdComponent2.default({
       return this.$refs.menu ? this.$refs.menu.contains(target) : false;
     },
     isBackdropExpectMenu: function isBackdropExpectMenu($event) {
-      return !this.$el.contains($event.target) && !this.isMenu($event);
+      var contains = function contains(el, target) {
+        if ('contains' in el) {
+          return el.contains(target);
+        }
+        return el.compareDocumentPosition(target) & 16;
+      };
+      return !contains(this.$el, $event.target) && !this.isMenu($event);
     },
     createClickEventObserver: function createClickEventObserver() {
       var _this3 = this;
@@ -9571,7 +9577,7 @@ exports.default = new _MdComponent2.default({
         this.MdMenu.bodyClickObserver = new _MdObserveEvent2.default(document.body, 'click', function ($event) {
           $event.stopPropagation();
 
-          if (!_this3.isMenu($event) && (_this3.MdMenu.closeOnClick || _this3.isBackdropExpectMenu($event))) {
+          if (!_this3.isMenuContentEl($event) && (_this3.MdMenu.closeOnClick || _this3.isBackdropExpectMenu($event))) {
             _this3.MdMenu.active = false;
             _this3.MdMenu.bodyClickObserver.destroy();
             _this3.MdMenu.windowResizeObserver.destroy();
@@ -31211,7 +31217,8 @@ var render = function() {
                     name: _vm.name,
                     disabled: _vm.disabled,
                     required: _vm.required,
-                    value: _vm.value
+                    value: _vm.value,
+                    checked: _vm.isSelected
                   },
                   false
                 )
